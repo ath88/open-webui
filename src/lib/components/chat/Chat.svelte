@@ -2839,6 +2839,16 @@
 								</div>
 							</div>
 
+							<!-- PATCH ADD BANNERS TO CHAT INPUT -->
+							{#if !showCommands}
+								{#each $banners as banner}
+									{#if !banner.dismissible}
+										<Banner {banner} className="mx-4 my-2" />
+									{/if}
+								{/each}
+							{/if}
+							<!-- /PATCH ADD BANNERS TO CHAT INPUT -->
+
 							<div class=" pb-2 {dragged ? 'z-0' : 'z-10'}">
 								<MessageInput
 									bind:this={messageInput}
