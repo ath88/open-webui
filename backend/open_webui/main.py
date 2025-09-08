@@ -396,6 +396,13 @@ from open_webui.config import (
     DEFAULT_PROMPT_SUGGESTIONS,
     DEFAULT_MODELS,
     DEFAULT_PINNED_MODELS,
+    # PATCH EXTRA LOGIN INFO
+    SYSTEM_REGISTER_URL,
+    SYSTEM_REGISTER_GUIDE_URL,
+    # /PATCH EXTRA LOGIN INFO
+    # PATCH ADD LOGO TO SIDEBAR
+    LOGO_URL,
+    # /PATCH ADD LOGO TO SIDEBAR
     DEFAULT_ARENA_MODEL,
     MODEL_ORDER_LIST,
     DEFAULT_MODEL_METADATA,
@@ -852,6 +859,18 @@ app.state.config.DEFAULT_MODEL_PARAMS = DEFAULT_MODEL_PARAMS
 app.state.config.DEFAULT_PROMPT_SUGGESTIONS = DEFAULT_PROMPT_SUGGESTIONS
 app.state.config.DEFAULT_USER_ROLE = DEFAULT_USER_ROLE
 app.state.config.DEFAULT_GROUP_ID = DEFAULT_GROUP_ID
+
+
+# PATCH EXTRA LOGIN INFO
+app.state.config.SYSTEM_REGISTER_URL = SYSTEM_REGISTER_URL
+app.state.config.SYSTEM_REGISTER_GUIDE_URL = SYSTEM_REGISTER_GUIDE_URL
+# /PATCH EXTRA LOGIN INFO
+
+
+# PATCH ADD LOGO TO SIDEBAR
+app.state.config.LOGO_URL = LOGO_URL
+# /PATCH ADD LOGO TO SIDEBAR
+
 
 app.state.config.PENDING_USER_OVERLAY_CONTENT = PENDING_USER_OVERLAY_CONTENT
 app.state.config.PENDING_USER_OVERLAY_TITLE = PENDING_USER_OVERLAY_TITLE
@@ -2044,6 +2063,16 @@ async def get_app_config(request: Request):
         'version': VERSION,
         'default_locale': str(DEFAULT_LOCALE),
         'oauth': {'providers': {name: config.get('name', name) for name, config in OAUTH_PROVIDERS.items()}},
+        # Environment variables for patches
+        'extended_features': {
+            # PATCH EXTRA LOGIN INFO
+            'system_register_url': app.state.config.SYSTEM_REGISTER_URL,
+            'system_register_guide_url': app.state.config.SYSTEM_REGISTER_GUIDE_URL,
+            # /PATCH EXTRA LOGIN INFO
+            # PATCH ADD LOGO TO SIDEBAR
+            'logo_url': app.state.config.LOGO_URL,
+            # /PATCH ADD LOGO TO SIDEBAR
+        },
         'features': {
             'auth': WEBUI_AUTH,
             'auth_trusted_header': bool(app.state.AUTH_TRUSTED_EMAIL_HEADER),
