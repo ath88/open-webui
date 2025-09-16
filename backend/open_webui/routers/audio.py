@@ -1213,6 +1213,9 @@ def get_available_models(request: Request) -> list[dict]:
                 response = requests.get(
                     f'{request.app.state.config.TTS_OPENAI_API_BASE_URL}/audio/models',
                     timeout=AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST,
+                    headers={
+                        "Authorization": f"Bearer {request.app.state.config.TTS_OPENAI_API_KEY}",
+                    },
                 )
                 response.raise_for_status()
                 data = response.json()
@@ -1256,6 +1259,9 @@ def get_available_voices(request) -> dict:
                 response = requests.get(
                     f'{request.app.state.config.TTS_OPENAI_API_BASE_URL}/audio/voices',
                     timeout=AIOHTTP_CLIENT_TIMEOUT_MODEL_LIST,
+                    headers={
+                        "Authorization": f"Bearer {request.app.state.config.TTS_OPENAI_API_KEY}",
+                    },
                 )
                 response.raise_for_status()
                 data = response.json()
