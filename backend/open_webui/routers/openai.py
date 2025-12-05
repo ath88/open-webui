@@ -627,7 +627,7 @@ async def get_models(request: Request, url_idx: Optional[int] = None, user=Depen
                 error_detail = f'Unexpected error: {str(e)}'
                 raise HTTPException(status_code=500, detail=error_detail)
 
-    if user.role == 'user' and not BYPASS_MODEL_ACCESS_CONTROL:
+    if (user.role == 'user' or user.role == 'builder') and not BYPASS_MODEL_ACCESS_CONTROL:
         models['data'] = await get_filtered_models(models, user)
 
     return models
@@ -1045,8 +1045,10 @@ async def generate_chat_completion(
                 payload = apply_system_prompt_to_body(system, payload, metadata, user)
 
         # Check if user has access to the model
-        if not bypass_filter and user.role == 'user':
-            user_group_ids = {group.id for group in Groups.get_groups_by_member_id(user.id)}
+        if not bypass_filter and (user.role == 'user' or user.role == 'builder'):
+            user_group_ids = {
+                group.id for group in Groups.get_groups_by_member_id(user.id)
+            }
             if not (
                 user.id == model_info.user_id
                 or AccessGrants.has_access(
