@@ -577,6 +577,11 @@ ENABLE_OAUTH_GROUP_CREATION = PersistentConfig(
     os.environ.get('ENABLE_OAUTH_GROUP_CREATION', 'False').lower() == 'true',
 )
 
+# PATCH OIDC
+AAK_OAUTH_ENABLE_ROLE_GROUPS_MAPPING = (
+    os.environ.get("AAK_OAUTH_ENABLE_ROLE_GROUPS_MAPPING", "False").lower() == "true"
+)
+# //PATCH OIDC
 
 oauth_group_default_share = os.environ.get('OAUTH_GROUP_DEFAULT_SHARE', 'true').strip().lower()
 OAUTH_GROUP_DEFAULT_SHARE = PersistentConfig(
