@@ -30,6 +30,7 @@ from open_webui.config import (
     DEFAULT_TAGS_GENERATION_PROMPT_TEMPLATE,
     DEFAULT_IMAGE_PROMPT_GENERATION_PROMPT_TEMPLATE,
     DEFAULT_QUERY_GENERATION_PROMPT_TEMPLATE,
+    DEFAULT_RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE,
     DEFAULT_AUTOCOMPLETE_GENERATION_PROMPT_TEMPLATE,
     DEFAULT_EMOJI_GENERATION_PROMPT_TEMPLATE,
     DEFAULT_MOA_GENERATION_PROMPT_TEMPLATE,
@@ -80,6 +81,7 @@ async def get_task_config(request: Request, user=Depends(get_verified_user)):
         'QUERY_GENERATION_PROMPT_TEMPLATE': request.app.state.config.QUERY_GENERATION_PROMPT_TEMPLATE,
         'TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE': request.app.state.config.TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE,
         'VOICE_MODE_PROMPT_TEMPLATE': request.app.state.config.VOICE_MODE_PROMPT_TEMPLATE,
+        'RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE': request.app.state.config.RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE,
     }
 
 
@@ -98,6 +100,7 @@ class TaskConfigForm(BaseModel):
     ENABLE_SEARCH_QUERY_GENERATION: bool
     ENABLE_RETRIEVAL_QUERY_GENERATION: bool
     QUERY_GENERATION_PROMPT_TEMPLATE: str
+    RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE: str
     TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE: str
     VOICE_MODE_PROMPT_TEMPLATE: Optional[str]
 
@@ -127,6 +130,10 @@ async def update_task_config(request: Request, form_data: TaskConfigForm, user=D
     request.app.state.config.QUERY_GENERATION_PROMPT_TEMPLATE = form_data.QUERY_GENERATION_PROMPT_TEMPLATE
     request.app.state.config.TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE = form_data.TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE
 
+    request.app.state.config.RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE = (
+        form_data.RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE
+    )
+
     request.app.state.config.VOICE_MODE_PROMPT_TEMPLATE = form_data.VOICE_MODE_PROMPT_TEMPLATE
 
     return {
@@ -146,6 +153,7 @@ async def update_task_config(request: Request, form_data: TaskConfigForm, user=D
         'QUERY_GENERATION_PROMPT_TEMPLATE': request.app.state.config.QUERY_GENERATION_PROMPT_TEMPLATE,
         'TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE': request.app.state.config.TOOLS_FUNCTION_CALLING_PROMPT_TEMPLATE,
         'VOICE_MODE_PROMPT_TEMPLATE': request.app.state.config.VOICE_MODE_PROMPT_TEMPLATE,
+        'RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE': request.app.state.config.RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE,
     }
 
 
@@ -469,10 +477,20 @@ async def generate_queries(request: Request, form_data: dict, user=Depends(get_v
 
     log.debug(f'generating {type} queries using model {task_model_id} for user {user.email}')
 
-    if (request.app.state.config.QUERY_GENERATION_PROMPT_TEMPLATE).strip() != '':
-        template = request.app.state.config.QUERY_GENERATION_PROMPT_TEMPLATE
+    if type == 'retrieval':
+        if (
+            request.app.state.config.RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE
+        ).strip() != '':
+            template = (
+                request.app.state.config.RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE
+            )
+        else:
+            template = DEFAULT_RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE
     else:
-        template = DEFAULT_QUERY_GENERATION_PROMPT_TEMPLATE
+        if request.app.state.config.QUERY_GENERATION_PROMPT_TEMPLATE.strip() != '':
+            template = request.app.state.config.QUERY_GENERATION_PROMPT_TEMPLATE
+        else:
+            template = DEFAULT_QUERY_GENERATION_PROMPT_TEMPLATE
 
     content = query_generation_template(template, form_data['messages'], user)
 

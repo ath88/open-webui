@@ -1842,6 +1842,34 @@ QUERY_GENERATION_PROMPT_TEMPLATE = PersistentConfig(
     os.environ.get('QUERY_GENERATION_PROMPT_TEMPLATE', ''),
 )
 
+RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE = PersistentConfig(
+    "RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE",
+    "task.query.retrieval.prompt_template",
+    os.environ.get("RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE", ""),
+)
+
+DEFAULT_RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE = """### Task:
+Analyze the chat history and generate 1-3 search queries optimized for retrieving relevant documents from a knowledge base using semantic vector search.
+
+### Guidelines:
+- Respond **EXCLUSIVELY** with a JSON object.
+- Base queries on the **user's questions and information needs only**. Use assistant responses solely for context and disambiguation (e.g. resolving "that", "it", "the one you mentioned").
+- Generate queries as natural-language phrases that capture the semantic meaning of the user's information need.
+- Reformulate conversational references into standalone, self-contained queries.
+- Each query should target a different aspect or angle to maximize retrieval coverage.
+- If the user's message clearly needs no document retrieval (e.g. greetings), return: { "queries": [] }
+- Respond in the same language as the user's messages.
+- Today's date is: {{CURRENT_DATE}}
+
+### Output:
+{ "queries": ["query1", "query2"] }
+
+### Chat History:
+<chat_history>
+{{MESSAGES:END:4}}
+</chat_history>
+"""
+
 DEFAULT_QUERY_GENERATION_PROMPT_TEMPLATE = """### Task:
 Analyze the chat history to determine the necessity of generating search queries, in the given language. By default, **prioritize generating 1-3 broad and relevant search queries** unless it is absolutely certain that no additional information is required. The aim is to retrieve comprehensive, updated, and valuable information even with minimal uncertainty. If no search is unequivocally needed, return an empty list.
 

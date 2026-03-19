@@ -17,6 +17,8 @@
 		updateRAGConfig
 	} from '$lib/apis/retrieval';
 
+	import { getTaskConfig, updateTaskConfig } from '$lib/apis';
+
 	import { reindexKnowledgeFiles } from '$lib/apis/knowledge';
 	import { deleteAllFiles } from '$lib/apis/files';
 
@@ -65,6 +67,7 @@
 	};
 
 	let RAGConfig = null;
+	let retrievalQueryPrompt = '';
 
 	const embeddingModelUpdateHandler = async () => {
 		if (RAG_EMBEDDING_ENGINE === '' && RAG_EMBEDDING_MODEL.split('/').length - 1 > 1) {
@@ -219,6 +222,15 @@
 			}
 		}
 
+		// Save the retrieval query prompt via the task config API
+		const currentTaskConfig = await getTaskConfig(localStorage.token);
+		if (currentTaskConfig) {
+			await updateTaskConfig(localStorage.token, {
+				...currentTaskConfig,
+				RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE: retrievalQueryPrompt
+			});
+		}
+
 		const res = await updateRAGConfig(localStorage.token, {
 			...RAGConfig,
 			// Convert null (from cleared number inputs) to empty string so the backend
@@ -280,6 +292,11 @@
 				: config.MINERU_PARAMS;
 
 		RAGConfig = config;
+
+		const taskConfig = await getTaskConfig(localStorage.token);
+		if (taskConfig) {
+			retrievalQueryPrompt = taskConfig.RETRIEVAL_QUERY_GENERATION_PROMPT_TEMPLATE ?? '';
+		}
 	});
 </script>
 
@@ -1313,6 +1330,28 @@
 								</div>
 							{/if}
 						{/if}
+
+						<div class="  mb-2.5 flex flex-col w-full justify-between">
+							<div class=" mb-1 text-xs font-medium">
+								{$i18n.t('Retrieval Query Generation Prompt')}
+							</div>
+							<div class="flex w-full items-center relative">
+								<Tooltip
+									content={$i18n.t(
+										'Leave empty to use the default prompt, or enter a custom prompt'
+									)}
+									placement="top-start"
+									className="w-full"
+								>
+									<Textarea
+										bind:value={retrievalQueryPrompt}
+										placeholder={$i18n.t(
+											'Leave empty to use the default prompt, or enter a custom prompt'
+										)}
+									/>
+								</Tooltip>
+							</div>
+						</div>
 
 						<div class="  mb-2.5 flex flex-col w-full justify-between">
 							<div class=" mb-1 text-xs font-medium">{$i18n.t('RAG Template')}</div>
