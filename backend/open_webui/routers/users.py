@@ -10,7 +10,7 @@ from fastapi.responses import Response, StreamingResponse, FileResponse
 from pydantic import BaseModel, ConfigDict
 
 
-from open_webui.models.auths import Auths
+from open_webui.models.auths import ApiKey, Auths
 from open_webui.models.oauth_sessions import OAuthSessions
 
 from open_webui.models.groups import Groups
@@ -34,6 +34,7 @@ from open_webui.internal.db import get_session
 
 
 from open_webui.utils.auth import (
+    create_api_key,
     get_admin_user,
     get_password_hash,
     get_verified_user,
@@ -680,3 +681,58 @@ async def delete_user_by_id(user_id: str, user=Depends(get_admin_user), db: Sess
 @router.get('/{user_id}/groups')
 async def get_user_groups_by_id(user_id: str, user=Depends(get_admin_user), db: Session = Depends(get_session)):
     return Groups.get_groups_by_member_id(user_id, db=db)
+
+
+############################
+# Admin: User API Key Management
+############################
+
+
+@router.post("/{user_id}/api_key", response_model=ApiKey)
+async def generate_api_key_for_user(
+    user_id: str,
+    user=Depends(get_admin_user),
+    db: Session = Depends(get_session),
+):
+    target_user = Users.get_user_by_id(user_id, db=db)
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ERROR_MESSAGES.USER_NOT_FOUND,
+        )
+
+    api_key = create_api_key()
+    success = Users.update_user_api_key_by_id(user_id, api_key, db=db)
+
+    if success:
+        return {"api_key": api_key}
+    else:
+        raise HTTPException(500, detail=ERROR_MESSAGES.CREATE_API_KEY_ERROR)
+
+
+@router.get("/{user_id}/api_key", response_model=ApiKey)
+async def get_api_key_for_user(
+    user_id: str,
+    user=Depends(get_admin_user),
+    db: Session = Depends(get_session),
+):
+    api_key = Users.get_user_api_key_by_id(user_id, db=db)
+    if api_key:
+        return {"api_key": api_key}
+    else:
+        raise HTTPException(404, detail=ERROR_MESSAGES.API_KEY_NOT_FOUND)
+
+
+@router.delete("/{user_id}/api_key", response_model=bool)
+async def delete_api_key_for_user(
+    user_id: str,
+    user=Depends(get_admin_user),
+    db: Session = Depends(get_session),
+):
+    target_user = Users.get_user_by_id(user_id, db=db)
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ERROR_MESSAGES.USER_NOT_FOUND,
+        )
+    return Users.delete_user_api_key_by_id(user_id, db=db)
