@@ -2927,6 +2927,36 @@ RAG_EXTERNAL_USER_MESSAGES_ONLY = PersistentConfig(
 # --- END EXTERNAL RETRIEVAL PATCH ---
 
 
+# --- BEGIN EXTERNAL INGESTION PATCH ---
+# External ingestion engine: delegates document chunking, embedding, and vector
+# storage to an external HTTP service instead of running save_docs_to_vector_db
+# in-process. Default off; set EXTERNAL_INGESTION_ENGINE=external to enable.
+EXTERNAL_INGESTION_ENGINE = PersistentConfig(
+    "EXTERNAL_INGESTION_ENGINE",
+    "rag.external_ingestion_engine",
+    os.environ.get("EXTERNAL_INGESTION_ENGINE", ""),
+)
+
+EXTERNAL_INGESTION_URL = PersistentConfig(
+    "EXTERNAL_INGESTION_URL",
+    "rag.external_ingestion_url",
+    os.environ.get("EXTERNAL_INGESTION_URL", ""),
+)
+
+EXTERNAL_INGESTION_API_KEY = PersistentConfig(
+    "EXTERNAL_INGESTION_API_KEY",
+    "rag.external_ingestion_api_key",
+    os.environ.get("EXTERNAL_INGESTION_API_KEY", ""),
+)
+
+EXTERNAL_INGESTION_TIMEOUT = PersistentConfig(
+    "EXTERNAL_INGESTION_TIMEOUT",
+    "rag.external_ingestion_timeout",
+    os.environ.get("EXTERNAL_INGESTION_TIMEOUT", "300"),
+)
+# --- END EXTERNAL INGESTION PATCH ---
+
+
 RAG_TEXT_SPLITTER = PersistentConfig(
     'RAG_TEXT_SPLITTER',
     'rag.text_splitter',
